@@ -1,4 +1,4 @@
-﻿using Psd2CertificateGenerator.Cryptography;
+﻿using Psd2CertificateGenerator.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -54,6 +54,8 @@ namespace Psd2CertificateGenerator
             });
             var issuerDnsName = parameters.IssuerDnsName;
 
+            var serialNumber = new byte[] { 1, 2, 3, 4 };
+
             using (RSA rsa = RSA.Create(2048))
             {
                 var request = new CertificateRequest(subjectDN, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -69,13 +71,13 @@ namespace Psd2CertificateGenerator
 
                 using (RSA issuerRSA = RSA.Create(4096))
                 {
-                    var certificate = request.Create(issuerDN, X509SignatureGenerator.CreateForRSA(issuerRSA, RSASignaturePadding.Pkcs1), DateTimeOffset.Now, DateTimeOffset.Now.AddMonths(39), new byte[] { 1, 2, 3, 4 });
+                    var certificate = request.Create(issuerDN, X509SignatureGenerator.CreateForRSA(issuerRSA, RSASignaturePadding.Pkcs1), DateTimeOffset.Now, DateTimeOffset.Now.AddMonths(39), serialNumber);
 
                     return new PSD2Certificate
                     {
-                        PublicKey = PemExporter.ExportPublicKeyPKCS1(rsa),
-                        PrivateKey = PemExporter.ExportPrivateKeyPKCS8(rsa),
-                        Certificate = PemExporter.ToPem("CERTIFICATE", certificate.Export(X509ContentType.Cert))
+                        PublicKey = rsa.ExportSubjectPublicKeyInfo().ToPem(PemFormatLabel.PublicKey),
+                        PrivateKey = rsa.ExportPkcs8PrivateKey().ToPem(PemFormatLabel.RsaPrivateKey),
+                        Certificate = certificate.Export(X509ContentType.Cert).ToPem(PemFormatLabel.Certificate)
                     };
                 }
             }

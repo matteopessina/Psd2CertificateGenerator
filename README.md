@@ -4,7 +4,7 @@ Based on https://www.etsi.org/deliver/etsi_ts/119400_119499/119495/01.03.02_60/t
 
 # Getting started
 
-* Make sure you have .Net Core 2.2 installed.
+* Make sure you have .Net Core 3.0 installed.
 1. **Clone** repository (`git clone https://github.com/payoneer/Psd2CertificateGenerator.git`)<br/>
 Inside the repo folder
 1. **Build**<br/>
