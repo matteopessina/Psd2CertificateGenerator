@@ -1,5 +1,6 @@
 ﻿using Psd2CertificateGenerator.Asn1;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Psd2CertificateGenerator
@@ -19,6 +20,13 @@ namespace Psd2CertificateGenerator
         private const string OID_PSP_AI = "0.4.0.19495.1.3";
         private const string OID_PSP_IC = "0.4.0.19495.1.4";
 
+        private static Dictionary<PSD2Roles, string> SupportedRoles = new Dictionary<PSD2Roles, string> {
+            { PSD2Roles.PSP_AS, OID_PSP_AS },
+            { PSD2Roles.PSP_PI, OID_PSP_PI },
+            { PSD2Roles.PSP_AI, OID_PSP_AI },
+            { PSD2Roles.PSP_IC, OID_PSP_IC },
+        };
+
         public X509QcStatmentExtension(PSD2Roles roles, PSD2CertificateType certificateType, byte retentionPeriod, string ncaName, string ncaId, bool critical = false) : 
             base(OID_qcStatements, EncodePSD2QcStatmentExtension(roles, certificateType, retentionPeriod, ncaName, ncaId), critical)
         {
@@ -26,16 +34,6 @@ namespace Psd2CertificateGenerator
 
         private static byte[] EncodePSD2QcStatmentExtension(PSD2Roles roles, PSD2CertificateType certType, byte retentionPeriod, string ncaName, string ncaId)
         {
-            var rolesSeq = new List<byte[]>();
-            if (roles.HasFlag(PSD2Roles.PSP_AS))
-                rolesSeq.Add(Asn1Encoder.Sequence(Asn1Encoder.ObjectIdentifier(OID_PSP_AS), Asn1Encoder.Utf8String(PSD2Roles.PSP_AS.ToString())));
-            if (roles.HasFlag(PSD2Roles.PSP_PI))
-                rolesSeq.Add(Asn1Encoder.Sequence(Asn1Encoder.ObjectIdentifier(OID_PSP_PI), Asn1Encoder.Utf8String(PSD2Roles.PSP_PI.ToString())));
-            if (roles.HasFlag(PSD2Roles.PSP_AI))
-                rolesSeq.Add(Asn1Encoder.Sequence(Asn1Encoder.ObjectIdentifier(OID_PSP_AI), Asn1Encoder.Utf8String(PSD2Roles.PSP_AI.ToString())));
-            if (roles.HasFlag(PSD2Roles.PSP_IC))
-                rolesSeq.Add(Asn1Encoder.Sequence(Asn1Encoder.ObjectIdentifier(OID_PSP_IC), Asn1Encoder.Utf8String(PSD2Roles.PSP_IC.ToString())));
-
             return Asn1Encoder.Sequence(
                 Asn1Encoder.Sequence(
                     Asn1Encoder.ObjectIdentifier(OID_QcsCompliance) //  this certificate is issued as a Qualified Certificate
@@ -56,7 +54,17 @@ namespace Psd2CertificateGenerator
                 Asn1Encoder.Sequence(
                     Asn1Encoder.ObjectIdentifier(OID_PSD2qcStatement),
                     Asn1Encoder.Sequence(
-                        Asn1Encoder.Sequence(rolesSeq.ToArray()),
+                        Asn1Encoder.Sequence(SupportedRoles.Keys.Aggregate(new List<byte[]>(), (acc, role) =>
+                        {
+                            if (roles.HasFlag(role)) 
+                                acc.Add(
+                                    Asn1Encoder.Sequence(
+                                        Asn1Encoder.ObjectIdentifier(SupportedRoles[role]), 
+                                        Asn1Encoder.Utf8String(role.ToString())
+                                    )
+                                );
+                            return acc;
+                        }).ToArray()),
                         Asn1Encoder.Utf8String(ncaName),
                         Asn1Encoder.Utf8String(ncaId)
                     )
