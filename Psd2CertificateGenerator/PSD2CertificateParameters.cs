@@ -53,6 +53,9 @@ namespace Psd2CertificateGenerator
 
     public class PSD2CertificateParameters
     {
+        [RegularExpression("^([A-Fa-f0-9]{2})*$", ErrorMessage = "Serial Number must be an hexadecimal string with length which is a multiple of 2"),]
+        public string SerialNumber { get; set; } = "01020304";
+        public int ExpirationInMonths { get; set; } = 39;
         public PSD2CertificateIssuerParameters Issuer { get; set; }
         public string IssuerDnsName { get; set; }
         public PSD2CertificateSubjectParameters Subject { get; set; }

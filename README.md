@@ -20,7 +20,7 @@ Inside the repo folder
 `docker run -it --rm payoneer/psd2gen -n "My TPP Name" -a "PSDXX-YYY-ZZZZZZ" --country FR`
 1. **Optional:** Create certificate files using a mount:  
     1. Create an output directory `mkdir out`
-    1. Run the following: `docker run -it --mount type=bind,src=$PWD/out,dst=/out --rm payoneer/psd2gen -f /out/sample -n "My TPP Name" -a "PSDXX-YYY-ZZZZZZ" --country FR`
+    1. Run the following: `docker run -it --mount type=bind,src=$PWD/out,dst=/out --rm payoneer/psd2gen --file /out/sample -n "My TPP Name" -a "PSDXX-YYY-ZZZZZZ" --country FR`
 
 ### Supported arguments
 | Short | Argument | Description | Required | Default |
@@ -28,18 +28,20 @@ Inside the repo folder
 | -n | --name | TPP's name | * | |
 | -a | --auth | TPP's PSD2 Authentication Number | * | |
 | -c | country | TPP's country | * | |
-| -f | --file | Output filename(s) (e.g. file.crt, file.key, file.pub) | | stdout | 
-| -t | --type | The certificate type | | QWAC |
-| -r | --roles | PSD2 roles | | PSP_AI_PSP_PI |
-| -d | --issuer-dns | The Issuer's DNS name | | payoneer.com |
-| -e| --issuer-email | The Issuer's Email address | | support@payoneer.com |
-| -m| --issuer-cn | The Issuer's Common name | | Payoneer PSD2 Sandbox |
-| -o| --issuer-o | The Issuer's organization name | | Payoneer |
-| -u| --issuer-ou | The Issuer's organization unit name | | Payoneer EU |
-| -l| --issuer-l | The Issuer's locality | | Gibraltar |
+| N/A | --file | Output filename(s) (e.g. file.crt, file.key, file.pub) | | `"stdout"` | 
+| -t | --type | The certificate type | | `"QWAC"` |
+| -r | --roles | PSD2 roles | | `"PSP_AI_PSP_PI"` |
+| -d | --issuer-dns | The Issuer's DNS name | | `"payoneer.com"` |
+| -e| --issuer-email | The Issuer's Email address | | `"support@payoneer.com"` |
+| -m| --issuer-cn | The Issuer's Common name | | `"Payoneer PSD2 Sandbox"` |
+| -o| --issuer-o | The Issuer's organization name | | `"Payoneer"` |
+| -u| --issuer-ou | The Issuer's organization unit name | | `"Payoneer EU"` |
+| -l| --issuer-l | The Issuer's locality | | `"Gibraltar"` |
 | -s| --issuer-s | The Issuer's state | | |
-| -y| --issuer-c | The Issuer's country | | GI |
-|  |--nca-name | The approving NCA's name | | Payoneer |
-| | --nca-id | The approving NCA's id | | IL-PAY |
+| -y| --issuer-c | The Issuer's country | | `"GI"` |
+|  |--nca-name | The approving NCA's name | | `"Payoneer"` |
+| | --nca-id | The approving NCA's id | | `"IL-PAY"` |
+| | --serial | Serial number in hex format (e.g. 01AB23...) | | `"01020304"`
+| -x | --exp | Expiration in months (can be 0) | | 39
 | | --help | Display help screen | | |
 | | --version | Display version information | | |

@@ -8,10 +8,12 @@
     <ApplicationIcon />
     <StartupObject />
     <AssemblyName>psd2gen</AssemblyName>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.6.0" />
+    <PackageReference Include="CommandLineParser" Version="2.7.82" />
   </ItemGroup>
 
   <ItemGroup>

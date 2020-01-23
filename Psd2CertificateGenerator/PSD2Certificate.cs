@@ -24,6 +24,17 @@ namespace Psd2CertificateGenerator
             return new X500DistinguishedName(string.Join(", ", subjectFields.Select(kvp => string.IsNullOrEmpty(kvp.Value) ? null : $"{kvp.Key}={kvp.Value}").Where(x => x != null)));
         }
 
+        private static byte[] StringToByteArray(string hex)
+        {
+            var length = hex.Length;
+            if (length % 2 != 0)
+                throw new ArgumentException("Hex string length must be a multiple of 2");
+            var bytes = new byte[length / 2];
+            for (int i = 0; i < length; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
+        }
+
         public static PSD2Certificate createRSAKeysAndCertificate(PSD2CertificateParameters parameters)
         {
             var context = new ValidationContext(parameters, null, null);
@@ -54,8 +65,6 @@ namespace Psd2CertificateGenerator
             });
             var issuerDnsName = parameters.IssuerDnsName;
 
-            var serialNumber = new byte[] { 1, 2, 3, 4 };
-
             using (RSA rsa = RSA.Create(2048))
             {
                 var request = new CertificateRequest(subjectDN, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -71,7 +80,8 @@ namespace Psd2CertificateGenerator
 
                 using (RSA issuerRSA = RSA.Create(4096))
                 {
-                    var certificate = request.Create(issuerDN, X509SignatureGenerator.CreateForRSA(issuerRSA, RSASignaturePadding.Pkcs1), DateTimeOffset.Now, DateTimeOffset.Now.AddMonths(39), serialNumber);
+                    var serialNumber = StringToByteArray(parameters.SerialNumber);
+                    var certificate = request.Create(issuerDN, X509SignatureGenerator.CreateForRSA(issuerRSA, RSASignaturePadding.Pkcs1), DateTimeOffset.Now, DateTimeOffset.Now.AddMonths(parameters.ExpirationInMonths), serialNumber);
 
                     return new PSD2Certificate
                     {

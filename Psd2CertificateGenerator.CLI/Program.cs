@@ -1,7 +1,6 @@
 ﻿using CommandLine;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace Psd2CertificateGenerator.CLI
 {
@@ -9,7 +8,13 @@ namespace Psd2CertificateGenerator.CLI
     {
         private class Options
         {
-            [Option('f', "file", HelpText = "Output filename(s) (e.g. file.crt, file.key, file.pub), if omitted then stdout")]
+            [Option("serial", Default = "01020304", HelpText = "Serial number in hex format (e.g. 01AB23...)")]
+            public string SerialNumber { get; set; }
+
+            [Option('x', "exp", Default = 39, HelpText = "Expiration in months (can be 0)")]
+            public int ExpirationInMonths { get; set; }
+
+            [Option("file", HelpText = "Output filename(s) (e.g. file.crt, file.key, file.pub), if omitted then stdout")]
             public string Filename { get; set; }
 
             // PSD2 Certificate
@@ -59,6 +64,8 @@ namespace Psd2CertificateGenerator.CLI
         {
             var psd2c = PSD2Certificate.createRSAKeysAndCertificate(new PSD2CertificateParameters
             {
+                SerialNumber = o.SerialNumber,
+                ExpirationInMonths = o.ExpirationInMonths,
                 CertificateType = o.Type,
                 IssuerDnsName = o.IssuerDNSName,
                 Issuer = new PSD2CertificateIssuerParameters
@@ -100,7 +107,17 @@ namespace Psd2CertificateGenerator.CLI
 
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args).WithParsed(Run);
+            try
+            {
+                Parser.Default.ParseArguments<Options>(args).WithParsed(Run);
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine("Validation Errors:");
+                foreach (ValidationException iex in (ex.InnerException as AggregateException).InnerExceptions) {
+                    Console.WriteLine("  " + iex.Message);
+                }
+            }
         }
     }
 }
