@@ -53,16 +53,8 @@ namespace Psd2CertificateGenerator
                 { "C", parameters.Subject.Country },
                 { OID_organizationIdentifier, parameters.Subject.OrganizationIdentifier },
             });
-            var issuerDN = CreateDistinguishedName(new Dictionary<string, string>
-            {
-                { OID_emailAddress, parameters.Issuer.EmailAddress },
-                { "CN", parameters.Issuer.CommonName },
-                { "OU", parameters.Issuer.OrganizationUnit },
-                { "O", parameters.Issuer.Organization },
-                { "L", parameters.Issuer.Locality },
-                { "ST", parameters.Issuer.State },
-                { "C", parameters.Issuer.Country },
-            });
+            // self-signed cert
+            var issuerDN = subjectDN;
             var issuerDnsName = parameters.IssuerDnsName;
 
             using (RSA rsa = RSA.Create(2048))
@@ -78,18 +70,14 @@ namespace Psd2CertificateGenerator
                 sanBuilder.AddDnsName(issuerDnsName);
                 request.CertificateExtensions.Add(sanBuilder.Build());
 
-                using (RSA issuerRSA = RSA.Create(4096))
-                {
-                    var serialNumber = StringToByteArray(parameters.SerialNumber);
-                    var certificate = request.Create(issuerDN, X509SignatureGenerator.CreateForRSA(issuerRSA, RSASignaturePadding.Pkcs1), DateTimeOffset.Now, DateTimeOffset.Now.AddMonths(parameters.ExpirationInMonths), serialNumber);
+                var certificate = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(10));
 
-                    return new PSD2Certificate
-                    {
-                        PublicKey = rsa.ExportSubjectPublicKeyInfo().ToPem(PemFormatLabel.PublicKey),
-                        PrivateKey = rsa.ExportPkcs8PrivateKey().ToPem(PemFormatLabel.RsaPrivateKey),
-                        Certificate = certificate.Export(X509ContentType.Cert).ToPem(PemFormatLabel.Certificate)
-                    };
-                }
+                return new PSD2Certificate
+                {
+                    PublicKey = rsa.ExportSubjectPublicKeyInfo().ToPem(PemFormatLabel.PublicKey),
+                    PrivateKey = rsa.ExportPkcs8PrivateKey().ToPem(PemFormatLabel.RsaPrivateKey),
+                    Certificate = certificate.Export(X509ContentType.Cert).ToPem(PemFormatLabel.Certificate)
+                };
             }
         }
     }
