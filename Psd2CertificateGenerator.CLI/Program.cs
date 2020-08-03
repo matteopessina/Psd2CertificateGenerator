@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Psd2CertificateGenerator.CLI
 {
@@ -44,6 +45,8 @@ namespace Psd2CertificateGenerator.CLI
             public string IssuerCountry { get; set; }
 
             // Subject
+            [Option("common-name", Required = true, HelpText = "The TPP's common name")]
+            public string TPPCommonName { get; set; }
 
             [Option('n', "name", Required = true, HelpText = "The TPP's name")]
             public string TPPName { get; set; }
@@ -80,7 +83,7 @@ namespace Psd2CertificateGenerator.CLI
                 },
                 Subject = new PSD2CertificateSubjectParameters
                 {
-                    CommonName = "TPP Test " + o.Type.ToString(),
+                    CommonName = o.TPPCommonName,
                     OrganizationIdentifier = o.TPPPSD2AuthenticationNumber,
                     Organization = o.TPPName,
                     Country = o.TPPCountry
